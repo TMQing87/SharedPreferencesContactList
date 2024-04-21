@@ -1,5 +1,7 @@
 package my.edu.tarc.contactlist202401.ui.profile
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -28,6 +30,8 @@ class ProfileFragment : Fragment(), MenuProvider {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    private lateinit var sharedPreferences: SharedPreferences
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -41,8 +45,14 @@ class ProfileFragment : Fragment(), MenuProvider {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        readPreference()
+
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+        binding.buttonSaveProfile.setOnClickListener() {
+            writePreference()
+        }
     }
 
     override fun onDestroyView() {
@@ -62,5 +72,30 @@ class ProfileFragment : Fragment(), MenuProvider {
             }
         }
         return true
+    }
+
+    private fun readPreference() {
+        sharedPreferences = requireActivity().getSharedPreferences("profile_pref", Context.MODE_PRIVATE)
+        val name = sharedPreferences.getString("name", "")
+        val email = sharedPreferences.getString("email", "")
+        val phone = sharedPreferences.getString("phone", "")
+
+        //Display shared preference values
+        binding.editTextProfileName.setText(name)
+        binding.editTextProfileEmail.setText(email)
+        binding.editTextProfilePhone.setText(phone)
+    }
+
+    private fun writePreference(){
+        with(sharedPreferences.edit()) {
+            val name = binding.editTextProfileName.text.toString()
+            val email = binding.editTextProfileEmail.text.toString()
+            val phone = binding.editTextProfilePhone.text.toString()
+
+            putString("name", name)
+            putString("email", email)
+            putString("phone", phone)
+            apply()  //write teh updates to the shared preferences file
+        }
     }
 }
